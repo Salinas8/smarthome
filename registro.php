@@ -50,8 +50,52 @@ switch($metodo){
         }
         break;
     case 'PUT':
+        if(isset($_GET['id'])){
+                $sql = "UPDATE registro SET ";
+                (isset($_GET['user'])) ? $sql .= "user = :u, " : null;
+                (isset($_GET['sensor'])) ? $sql .= "sensor = :s, " : null;
+                (isset($_GET['valor'])) ? $sql .= "valor = :v, " : null;
+                (isset($_GET['fecha'])) ? $sql .= "fecha = :f, " : null;
+                $sql = substr($sql, 0, -2);
+                $sql .= " WHERE id = :id";
+                $c = conexion();
+                $s = $c->prepare($sql);
+                (isset($_GET['user'])) ? $s->bindValue(":u", $_GET['user']) : null;
+                (isset($_GET['sensor'])) ? $s->bindValue(":s", $_GET['sensor']) : null;
+                (isset($_GET['valor'])) ? $s->bindValue(":v", $_GET['valor']) : null;
+                (isset($_GET['fecha'])) ? $s->bindValue(":f", $_GET['fecha']) : null;
+                $s->bindValue(":id", $_GET['id']);
+                $s->execute();
+                if($s->rowCount()>0){
+                    header("http/1.1 200 OK");
+                    echo json_encode(array("update" => "y"));
+                }else{
+                    header("http/1.1 400 bad request");
+                    echo json_encode(array("upate" => "n"));
+                }
+        }else{
+            header("HTTP/1.1 400 Bad Request");
+            echo "Faltan datos";   
+        }
         break;
     case 'DELETE':
+        if(isset($_GET['id'])){
+            $c = conexion();
+            $s = $c->prepare("DELETE FROM registro WHERE id = :id");
+            $s->bindValue(":id", $_GET['id']);
+            $s->execute();
+            if($s->rowCount()>0){
+                header("http/1.1 200 OK");
+                echo json_encode(array("delete" => "y"));
+            }else{
+                header("http/1.1 400 bad request");
+                echo json_encode(array("upate" => "n"));
+            }
+            
+        }else{
+            header("HTTP/1.1 400 Bad Request");
+            echo "Faltan datos";   
+        }
         break;
     default:
         header("HTTP/1.1 405 Method Not Allowed");
